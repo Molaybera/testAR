@@ -4,111 +4,164 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>AR Marker Scanner</title>
-    <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1c2407b26c61958baa93967b5412487cd94b290b/dist/aframe-master.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    <title>AR Surface Placement</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            margin: 0;
-            overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #000;
-        }
-
-        #start-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 99999;
             color: white;
-            text-align: center;
+        }
+
+        #container {
+            width: 100%;
+            max-width: 500px;
             padding: 20px;
+            text-align: center;
         }
 
-        #start-screen h1 {
-            font-size: 28px;
+        h1 {
+            font-size: 32px;
             margin-bottom: 15px;
-            font-weight: 600;
+            font-weight: 700;
         }
 
-        #start-screen p {
-            font-size: 14px;
-            margin-bottom: 30px;
+        .subtitle {
+            font-size: 16px;
             opacity: 0.9;
-            max-width: 300px;
+            margin-bottom: 30px;
         }
 
-        #start-btn {
+        #status-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .status-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .status-text {
+            font-size: 14px;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        #ar-button {
             background: white;
             color: #667eea;
             border: none;
-            padding: 15px 40px;
+            padding: 18px 40px;
             border-radius: 50px;
             font-size: 18px;
             font-weight: 600;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: none;
         }
 
-        #start-btn:active {
+        #ar-button:active {
             transform: scale(0.95);
         }
 
-        .marker-info {
-            margin-top: 30px;
-            font-size: 12px;
-            opacity: 0.8;
+        #ar-button.show {
+            display: inline-block;
         }
 
-        .marker-info a {
-            color: #fff;
-            text-decoration: underline;
+        .error-card {
+            background: rgba(244, 67, 54, 0.2);
+            border: 2px solid rgba(244, 67, 54, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
         }
 
-        #info-panel {
+        .error-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #ffcdd2;
+        }
+
+        .error-list {
+            text-align: left;
+            font-size: 13px;
+            line-height: 1.8;
+            opacity: 0.9;
+        }
+
+        .error-list li {
+            margin-bottom: 8px;
+        }
+
+        model-viewer {
+            width: 100vw;
+            height: 100vh;
             position: fixed;
-            top: 10px;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+
+        model-viewer.active {
+            display: block;
+        }
+
+        #ar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+
+        #ar-overlay.active {
+            display: block;
+        }
+
+        .ar-instruction {
+            position: absolute;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translate(-50%, -50%);
             background: rgba(0, 0, 0, 0.8);
             color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            z-index: 9999;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 16px;
             text-align: center;
-            font-size: 11px;
-            display: none;
-            max-width: 90%;
+            max-width: 80%;
+            animation: pulse 2s infinite;
         }
 
-        #status {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(76, 175, 80, 0.9);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            z-index: 9999;
-            font-size: 13px;
-            display: none;
-            font-weight: 500;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         .loading-spinner {
@@ -126,201 +179,221 @@
             100% { transform: rotate(360deg); }
         }
 
-        #camera-error {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(244, 67, 54, 0.95);
-            color: white;
-            padding: 20px;
+        .feature-list {
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            z-index: 100000;
-            display: none;
-            text-align: center;
-            max-width: 85%;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: left;
+            font-size: 13px;
         }
 
-        #camera-error button {
-            margin-top: 15px;
-            background: white;
-            color: #f44336;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-weight: 600;
-        }
-
-        a-scene {
-            display: none;
-        }
-
-        a-scene.started {
-            display: block;
+        .feature-list li {
+            margin-bottom: 8px;
+            padding-left: 10px;
         }
     </style>
 </head>
 <body>
-    <!-- Start Screen -->
-    <div id="start-screen">
-        <h1>📱 AR Marker Scanner</h1>
-        <p>Experience augmented reality! Point your camera at the Hiro marker to see 3D objects come to life.</p>
-        <button id="start-btn">Start AR Camera</button>
-        <div class="marker-info">
-            Need the marker? <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" target="_blank">Download Here</a>
+    <div id="container">
+        <h1>🌐 AR Surface Placement</h1>
+        <p class="subtitle">Place 3D objects in your real world</p>
+
+        <div id="status-card">
+            <div class="status-icon" id="status-icon">🔍</div>
+            <div class="status-title" id="status-title">Checking Device...</div>
+            <div class="status-text" id="status-text">Please wait while we check AR compatibility</div>
+            <div class="loading-spinner"></div>
+        </div>
+
+        <button id="ar-button">Start AR Experience</button>
+
+        <div id="error-container"></div>
+    </div>
+
+    <!-- Model Viewer for AR -->
+    <model-viewer id="model-viewer"
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        camera-controls
+        touch-action="pan-y"
+        alt="3D Model"
+        shadow-intensity="1"
+        ar-scale="auto">
+    </model-viewer>
+
+    <div id="ar-overlay">
+        <div class="ar-instruction">
+            👆 Tap on a surface to place the object
         </div>
     </div>
 
-    <!-- Info Panel -->
-    <div id="info-panel">
-        👆 Point at Hiro marker to see AR
-    </div>
+    <script type="module">
+        const statusIcon = document.getElementById('status-icon');
+        const statusTitle = document.getElementById('status-title');
+        const statusText = document.getElementById('status-text');
+        const statusCard = document.getElementById('status-card');
+        const arButton = document.getElementById('ar-button');
+        const errorContainer = document.getElementById('error-container');
+        const modelViewer = document.getElementById('model-viewer');
+        const arOverlay = document.getElementById('ar-overlay');
 
-    <!-- Status -->
-    <div id="status">Searching for marker...</div>
+        // Generate a simple 3D model inline (a colorful cube)
+        const createInlineModel = () => {
+            const glbData = 'data:model/gltf-binary;base64,Z2xURgIAAADwBQAA2AMAAEpTT057InNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbMF19XSwibm9kZXMiOlt7Im1lc2giOjB9XSwibWVzaGVzIjpbeyJwcmltaXRpdmVzIjpbeyJhdHRyaWJ1dGVzIjp7IlBPU0lUSU9OIjowLCJOT1JNQUwiOjEsIkNPTE9SXzAiOjJ9LCJpbmRpY2VzIjozLCJtYXRlcmlhbCI6MH1dfV0sImFjY2Vzc29ycyI6W3siYnVmZmVyVmlldyI6MCwiY29tcG9uZW50VHlwZSI6NTEyNiwidHlwZSI6IlZFQzMiLCJjb3VudCI6MjQsIm1heCI6WzAuNSwwLjUsMC41XSwibWluIjpbLTAuNSwtMC41LC0wLjVdfSx7ImJ1ZmZlclZpZXciOjEsImNvbXBvbmVudFR5cGUiOjUxMjYsInR5cGUiOiJWRUMzIiwiY291bnQiOjI0fSx7ImJ1ZmZlclZpZXciOjIsImNvbXBvbmVudFR5cGUiOjUxMjYsInR5cGUiOiJWRUM0IiwiY291bnQiOjI0fSx7ImJ1ZmZlclZpZXciOjMsImNvbXBvbmVudFR5cGUiOjUxMjMsInR5cGUiOiJTQ0FMQVIiLCJjb3VudCI6MzZ9XSwiYnVmZmVyVmlld3MiOlt7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MCwiYnl0ZUxlbmd0aCI6Mjg4fSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6Mjg4LCJieXRlTGVuZ3RoIjoyODh9LHsiYnVmZmVyIjowLCJieXRlT2Zmc2V0Ijo1NzYsImJ5dGVMZW5ndGgiOjM4NH0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjk2MCwiYnl0ZUxlbmd0aCI6NzJ9XSwibWF0ZXJpYWxzIjpbeyJwYnJNZXRhbGxpY1JvdWdobmVzcyI6eyJiYXNlQ29sb3JGYWN0b3IiOlsxLDAuMiwwLjIsMV0sIm1ldGFsbGljRmFjdG9yIjowLjUsInJvdWdobmVzc0ZhY3RvciI6MC4zfX1dLCJidWZmZXJzIjpbeyJieXRlTGVuZ3RoIjoxMDMyfV0sImFzc2V0Ijp7InZlcnNpb24iOiIyLjAifX0AAAAEBAAAAEJJTQAA';
+            return glbData;
+        };
 
-    <!-- Camera Error -->
-    <div id="camera-error">
-        <h3>⚠️ Camera Access Denied</h3>
-        <p>Please allow camera access in your browser settings and refresh the page.</p>
-        <button onclick="location.reload()">Refresh Page</button>
-    </div>
+        modelViewer.src = createInlineModel();
 
-    <!-- AR Scene -->
-    <a-scene
-        id="ar-scene"
-        embedded
-        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; trackingMethod: best; sourceWidth: 640; sourceHeight: 480; displayWidth: 640; displayHeight: 480;"
-        vr-mode-ui="enabled: false"
-        renderer="logarithmicDepthBuffer: true; precision: medium; antialias: true; alpha: true;"
-        device-orientation-permission-ui="enabled: false">
-        
-        <a-marker preset="hiro" id="marker" emitevents="true" smooth="true" smoothCount="5" smoothTolerance="0.01" smoothThreshold="2">
+        async function checkARSupport() {
+            console.log('Checking AR support...');
             
-            <!-- Simplified for better mobile performance -->
+            // Check if running on mobile
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
             
-            <!-- BIG RED CUBE -->
-            <a-box 
-                position="0 1 0" 
-                scale="2 2 2"
-                rotation="0 45 45"
-                color="#FF0000"
-                animation="property: rotation; to: 360 405 405; loop: true; dur: 4000; easing: linear">
-            </a-box>
+            if (!isMobile) {
+                showError('desktop');
+                return;
+            }
 
-            <!-- YELLOW TEXT -->
-            <a-text 
-                value="AR ACTIVE!" 
-                position="0 2.5 0" 
-                align="center" 
-                color="#FFFF00"
-                width="6"
-                scale="1.5 1.5 1.5">
-            </a-text>
-
-            <!-- GREEN SPHERE -->
-            <a-sphere 
-                position="2.5 1 0" 
-                radius="0.6" 
-                color="#00FF00">
-            </a-sphere>
-
-            <!-- BLUE PLATFORM -->
-            <a-cylinder 
-                position="0 0 0" 
-                radius="1.8" 
-                height="0.3" 
-                color="#0000FF">
-            </a-cylinder>
-
-            <!-- ROTATING RING -->
-            <a-torus 
-                position="0 1 0" 
-                radius="2.2" 
-                radius-tubular="0.15" 
-                color="#FF00FF"
-                rotation="90 0 0"
-                animation="property: rotation; to: 90 360 0; loop: true; dur: 5000; easing: linear">
-            </a-torus>
-
-        </a-marker>
-
-        <a-entity camera></a-entity>
-    </a-scene>
-
-    <script>
-        const startScreen = document.getElementById('start-screen');
-        const startBtn = document.getElementById('start-btn');
-        const arScene = document.getElementById('ar-scene');
-        const infoPanel = document.getElementById('info-panel');
-        const status = document.getElementById('status');
-        const cameraError = document.getElementById('camera-error');
-
-        let arStarted = false;
-
-        // Start AR on button click
-        startBtn.addEventListener('click', async function() {
-            console.log('Start button clicked');
-            
-            // Add loading state
-            startBtn.innerHTML = '<div class="loading-spinner"></div>';
-            startBtn.disabled = true;
+            // Check WebXR support
+            if (!navigator.xr) {
+                showError('no-webxr');
+                return;
+            }
 
             try {
-                // Request camera permission first
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'environment',
-                        width: { ideal: 640 },
-                        height: { ideal: 480 }
-                    } 
-                });
+                // Check for immersive-ar support
+                const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
                 
-                console.log('Camera permission granted');
-                
-                // Stop the test stream
-                stream.getTracks().forEach(track => track.stop());
-                
-                // Show AR scene
-                setTimeout(() => {
-                    startScreen.style.display = 'none';
-                    arScene.classList.add('started');
-                    infoPanel.style.display = 'block';
-                    status.style.display = 'block';
-                    arStarted = true;
-                    
-                    console.log('AR Scene started');
-                }, 500);
+                if (!isARSupported) {
+                    showError('no-ar-mode');
+                    return;
+                }
+
+                // All checks passed!
+                showSuccess();
 
             } catch (error) {
-                console.error('Camera error:', error);
-                startScreen.style.display = 'none';
-                cameraError.style.display = 'block';
+                console.error('AR check error:', error);
+                showError('unknown');
             }
-        });
+        }
 
-        // Marker detection events
-        window.addEventListener('load', function() {
-            const marker = document.querySelector('#marker');
+        function showSuccess() {
+            document.querySelector('.loading-spinner').style.display = 'none';
+            statusIcon.textContent = '✅';
+            statusTitle.textContent = 'AR Ready!';
+            statusText.textContent = 'Your device supports AR. Tap the button below to start.';
+            statusCard.style.background = 'rgba(76, 175, 80, 0.2)';
+            statusCard.style.border = '2px solid rgba(76, 175, 80, 0.5)';
+            arButton.classList.add('show');
+
+            // Show features
+            const features = document.createElement('div');
+            features.className = 'feature-list';
+            features.innerHTML = `
+                <strong>✨ Features:</strong>
+                <ul>
+                    <li>📍 Tap to place objects on surfaces</li>
+                    <li>🔄 Drag to rotate the object</li>
+                    <li>📏 Pinch to scale size</li>
+                    <li>🚶 Walk around to view from all angles</li>
+                </ul>
+            `;
+            statusCard.appendChild(features);
+        }
+
+        function showError(type) {
+            document.querySelector('.loading-spinner').style.display = 'none';
+            statusIcon.textContent = '❌';
+            statusTitle.textContent = 'AR Not Supported';
+            statusCard.style.background = 'rgba(244, 67, 54, 0.2)';
+            statusCard.style.border = '2px solid rgba(244, 67, 54, 0.5)';
+
+            const errorMessages = {
+                'desktop': {
+                    title: 'Desktop Device Detected',
+                    message: 'AR requires a mobile device with a camera.',
+                    requirements: [
+                        'Use an Android phone (Android 8.0+) with ARCore',
+                        'Or use an iPhone (iOS 12+) with ARKit',
+                        'Make sure Chrome or Safari is updated'
+                    ]
+                },
+                'no-webxr': {
+                    title: 'WebXR Not Available',
+                    message: 'Your browser doesn\'t support WebXR.',
+                    requirements: [
+                        'Update Chrome to latest version (v79+)',
+                        'On iPhone, use Safari (iOS 12+)',
+                        'Enable AR features in browser settings'
+                    ]
+                },
+                'no-ar-mode': {
+                    title: 'AR Mode Not Available',
+                    message: 'Your device doesn\'t support AR sessions.',
+                    requirements: [
+                        'Android: Requires ARCore support (Android 8.0+)',
+                        'iPhone: Requires ARKit support (iOS 12+)',
+                        'Install Google Play Services for AR (Android)',
+                        'Check if your phone model supports ARCore/ARKit'
+                    ]
+                },
+                'unknown': {
+                    title: 'Compatibility Check Failed',
+                    message: 'Could not verify AR support.',
+                    requirements: [
+                        'Check internet connection',
+                        'Allow camera and sensor permissions',
+                        'Try reloading the page',
+                        'Use Chrome (Android) or Safari (iOS)'
+                    ]
+                }
+            };
+
+            const error = errorMessages[type] || errorMessages['unknown'];
             
-            if (marker) {
-                marker.addEventListener('markerFound', function() {
-                    console.log('✅ Marker detected!');
-                    status.textContent = '✅ Marker Found!';
-                    status.style.background = 'rgba(76, 175, 80, 0.95)';
-                    status.style.display = 'block';
-                });
+            statusText.innerHTML = error.message;
 
-                marker.addEventListener('markerLost', function() {
-                    console.log('❌ Marker lost');
-                    status.textContent = '🔍 Searching for marker...';
-                    status.style.background = 'rgba(255, 152, 0, 0.95)';
-                });
-            }
+            const errorCard = document.createElement('div');
+            errorCard.className = 'error-card';
+            errorCard.innerHTML = `
+                <div class="error-title">${error.title}</div>
+                <div class="error-list">
+                    <strong>Requirements:</strong>
+                    <ul>
+                        ${error.requirements.map(req => `<li>${req}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            errorContainer.appendChild(errorCard);
+        }
+
+        // Start AR when button clicked
+        arButton.addEventListener('click', () => {
+            console.log('Starting AR...');
+            modelViewer.activateAR();
+            arOverlay.classList.add('active');
+            
+            // Hide overlay after 3 seconds
+            setTimeout(() => {
+                arOverlay.classList.remove('active');
+            }, 3000);
         });
 
-        console.log('AR Marker Scanner Ready');
-        console.log('Tap "Start AR Camera" to begin');
+        // Listen for AR session start/end
+        modelViewer.addEventListener('ar-status', (event) => {
+            console.log('AR Status:', event.detail.status);
+        });
+
+        // Run compatibility check on load
+        window.addEventListener('load', () => {
+            setTimeout(checkARSupport, 1000);
+        });
+
+        console.log('AR Surface Placement App Initialized');
     </script>
 </body>
 </html>
