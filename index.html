@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>AR Surface Placement</title>
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1c2407b26c61958baa93967b5412487cd94b290b/dist/aframe-master.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/three.js/build/ar-threex-location-only.js"></script>
+    <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -15,385 +17,378 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
+            overflow: hidden;
         }
 
-        #container {
-            width: 100%;
-            max-width: 500px;
-            padding: 20px;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 32px;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            font-size: 16px;
-            opacity: 0.9;
-            margin-bottom: 30px;
-        }
-
-        #status-card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .status-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        .status-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .status-text {
-            font-size: 14px;
-            opacity: 0.9;
-            line-height: 1.5;
-        }
-
-        #ar-button {
-            background: white;
-            color: #667eea;
-            border: none;
-            padding: 18px 40px;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: none;
-        }
-
-        #ar-button:active {
-            transform: scale(0.95);
-        }
-
-        #ar-button.show {
-            display: inline-block;
-        }
-
-        .error-card {
-            background: rgba(244, 67, 54, 0.2);
-            border: 2px solid rgba(244, 67, 54, 0.5);
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .error-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #ffcdd2;
-        }
-
-        .error-list {
-            text-align: left;
-            font-size: 13px;
-            line-height: 1.8;
-            opacity: 0.9;
-        }
-
-        .error-list li {
-            margin-bottom: 8px;
-        }
-
-        model-viewer {
-            width: 100vw;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            display: none;
-        }
-
-        model-viewer.active {
-            display: block;
-        }
-
-        #ar-overlay {
+        #start-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
-            z-index: 1000;
-            display: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            color: white;
+            text-align: center;
+            padding: 30px;
         }
 
-        #ar-overlay.active {
+        #start-overlay h1 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        #start-overlay p {
+            font-size: 15px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            max-width: 350px;
+            line-height: 1.6;
+        }
+
+        #start-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 18px 45px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+
+        #start-btn:active {
+            transform: scale(0.95);
+        }
+
+        .feature-box {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            max-width: 350px;
+        }
+
+        .feature-box h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .feature-box ul {
+            text-align: left;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .feature-box li {
+            margin-bottom: 8px;
+        }
+
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            gap: 10px;
+            z-index: 9999;
+        }
+
+        #controls.show {
+            display: flex;
+        }
+
+        .control-btn {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        #instruction {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            z-index: 9999;
+            display: none;
+            text-align: center;
+            max-width: 85%;
+        }
+
+        #instruction.show {
             display: block;
         }
 
-        .ar-instruction {
-            position: absolute;
-            top: 50%;
+        #model-info {
+            position: fixed;
+            top: 70px;
             left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
+            transform: translateX(-50%);
+            background: rgba(76, 175, 80, 0.9);
             color: white;
-            padding: 20px 30px;
-            border-radius: 15px;
-            font-size: 16px;
-            text-align: center;
-            max-width: 80%;
-            animation: pulse 2s infinite;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 9999;
+            display: none;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+        #model-info.show {
+            display: block;
         }
 
-        .loading-spinner {
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top: 3px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .feature-list {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px;
+        .model-selector {
             margin-top: 20px;
-            text-align: left;
-            font-size: 13px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 350px;
         }
 
-        .feature-list li {
-            margin-bottom: 8px;
-            padding-left: 10px;
+        .model-selector h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .model-option {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+
+        .model-option:active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .model-option.selected {
+            background: rgba(255, 255, 255, 0.4);
+            border: 2px solid white;
         }
     </style>
 </head>
 <body>
-    <div id="container">
-        <h1>🌐 AR Surface Placement</h1>
-        <p class="subtitle">Place 3D objects in your real world</p>
-
-        <div id="status-card">
-            <div class="status-icon" id="status-icon">🔍</div>
-            <div class="status-title" id="status-title">Checking Device...</div>
-            <div class="status-text" id="status-text">Please wait while we check AR compatibility</div>
-            <div class="loading-spinner"></div>
+    <div id="start-overlay">
+        <h1>🌟 AR Surface Placement</h1>
+        <p>Place 3D models in your real world. No apps needed - everything works in your browser!</p>
+        
+        <div class="model-selector">
+            <h3>Choose a 3D Model:</h3>
+            <div class="model-option selected" data-model="astronaut">
+                🚀 Astronaut
+            </div>
+            <div class="model-option" data-model="duck">
+                🦆 Duck
+            </div>
+            <div class="model-option" data-model="robot">
+                🤖 Robot
+            </div>
         </div>
 
-        <button id="ar-button">Start AR Experience</button>
+        <button id="start-btn">Launch AR Camera</button>
 
-        <div id="error-container"></div>
-    </div>
-
-    <!-- Model Viewer for AR -->
-    <model-viewer id="model-viewer"
-        ar
-        ar-modes="webxr scene-viewer quick-look"
-        camera-controls
-        touch-action="pan-y"
-        alt="3D Model"
-        shadow-intensity="1"
-        ar-scale="auto">
-    </model-viewer>
-
-    <div id="ar-overlay">
-        <div class="ar-instruction">
-            👆 Tap on a surface to place the object
+        <div class="feature-box">
+            <h3>✨ How it works:</h3>
+            <ul>
+                <li>📸 Camera opens in browser</li>
+                <li>👆 Tap screen to place model</li>
+                <li>📏 Use buttons to scale/rotate</li>
+                <li>🚶 Walk around - model stays in place</li>
+                <li>🔄 No apps or downloads needed!</li>
+            </ul>
         </div>
     </div>
 
-    <script type="module">
-        const statusIcon = document.getElementById('status-icon');
-        const statusTitle = document.getElementById('status-title');
-        const statusText = document.getElementById('status-text');
-        const statusCard = document.getElementById('status-card');
-        const arButton = document.getElementById('ar-button');
-        const errorContainer = document.getElementById('error-container');
-        const modelViewer = document.getElementById('model-viewer');
-        const arOverlay = document.getElementById('ar-overlay');
+    <div id="instruction" class="show">
+        👆 Tap anywhere to place the model
+    </div>
 
-        // Generate a simple 3D model inline (a colorful cube)
-        const createInlineModel = () => {
-            const glbData = 'data:model/gltf-binary;base64,Z2xURgIAAADwBQAA2AMAAEpTT057InNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbMF19XSwibm9kZXMiOlt7Im1lc2giOjB9XSwibWVzaGVzIjpbeyJwcmltaXRpdmVzIjpbeyJhdHRyaWJ1dGVzIjp7IlBPU0lUSU9OIjowLCJOT1JNQUwiOjEsIkNPTE9SXzAiOjJ9LCJpbmRpY2VzIjozLCJtYXRlcmlhbCI6MH1dfV0sImFjY2Vzc29ycyI6W3siYnVmZmVyVmlldyI6MCwiY29tcG9uZW50VHlwZSI6NTEyNiwidHlwZSI6IlZFQzMiLCJjb3VudCI6MjQsIm1heCI6WzAuNSwwLjUsMC41XSwibWluIjpbLTAuNSwtMC41LC0wLjVdfSx7ImJ1ZmZlclZpZXciOjEsImNvbXBvbmVudFR5cGUiOjUxMjYsInR5cGUiOiJWRUMzIiwiY291bnQiOjI0fSx7ImJ1ZmZlclZpZXciOjIsImNvbXBvbmVudFR5cGUiOjUxMjYsInR5cGUiOiJWRUM0IiwiY291bnQiOjI0fSx7ImJ1ZmZlclZpZXciOjMsImNvbXBvbmVudFR5cGUiOjUxMjMsInR5cGUiOiJTQ0FMQVIiLCJjb3VudCI6MzZ9XSwiYnVmZmVyVmlld3MiOlt7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MCwiYnl0ZUxlbmd0aCI6Mjg4fSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6Mjg4LCJieXRlTGVuZ3RoIjoyODh9LHsiYnVmZmVyIjowLCJieXRlT2Zmc2V0Ijo1NzYsImJ5dGVMZW5ndGgiOjM4NH0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjk2MCwiYnl0ZUxlbmd0aCI6NzJ9XSwibWF0ZXJpYWxzIjpbeyJwYnJNZXRhbGxpY1JvdWdobmVzcyI6eyJiYXNlQ29sb3JGYWN0b3IiOlsxLDAuMiwwLjIsMV0sIm1ldGFsbGljRmFjdG9yIjowLjUsInJvdWdobmVzc0ZhY3RvciI6MC4zfX1dLCJidWZmZXJzIjpbeyJieXRlTGVuZ3RoIjoxMDMyfV0sImFzc2V0Ijp7InZlcnNpb24iOiIyLjAifX0AAAAEBAAAAEJJTQAA';
-            return glbData;
+    <div id="model-info">
+        Model placed! ✅
+    </div>
+
+    <div id="controls">
+        <button class="control-btn" id="scale-up">➕ Bigger</button>
+        <button class="control-btn" id="scale-down">➖ Smaller</button>
+        <button class="control-btn" id="rotate-btn">🔄 Rotate</button>
+        <button class="control-btn" id="reset-btn">🔁 Reset</button>
+    </div>
+
+    <a-scene
+        id="ar-scene"
+        embedded
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; trackingMethod: best;"
+        vr-mode-ui="enabled: false"
+        gesture-detector
+        renderer="logarithmicDepthBuffer: true; precision: medium; antialias: true;">
+
+        <!-- Camera -->
+        <a-entity camera look-controls-enabled="false" arjs-look-controls="smoothingFactor: 0.1"></a-entity>
+
+        <!-- Placeholder for model - will be created dynamically -->
+        <a-entity id="model-container"></a-entity>
+
+    </a-scene>
+
+    <script>
+        // Available 3D Models
+        const models = {
+            astronaut: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+            duck: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Binary/Duck.glb',
+            robot: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/RobotExpressive/glTF-Binary/RobotExpressive.glb'
         };
 
-        modelViewer.src = createInlineModel();
+        let selectedModel = 'astronaut';
+        let modelPlaced = false;
+        let currentModel = null;
+        let currentScale = 1;
+        let currentRotation = 0;
 
-        async function checkARSupport() {
-            console.log('Checking AR support...');
+        // Model selection
+        document.querySelectorAll('.model-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.model-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedModel = this.dataset.model;
+                console.log('Selected model:', selectedModel);
+            });
+        });
+
+        // Start AR
+        document.getElementById('start-btn').addEventListener('click', function() {
+            document.getElementById('start-overlay').style.display = 'none';
+            document.getElementById('instruction').classList.add('show');
+            console.log('AR Started with model:', selectedModel);
+        });
+
+        // Wait for scene to load
+        const scene = document.querySelector('a-scene');
+        scene.addEventListener('loaded', function() {
+            console.log('AR Scene loaded');
+
+            // Add click/touch event to place model
+            const camera = document.querySelector('[camera]');
             
-            // Check if running on mobile
-            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-            
-            if (!isMobile) {
-                showError('desktop');
-                return;
-            }
+            scene.addEventListener('click', function(evt) {
+                if (modelPlaced) return; // Only place once
 
-            // Check WebXR support
-            if (!navigator.xr) {
-                showError('no-webxr');
-                return;
-            }
+                console.log('Screen tapped - placing model');
 
-            try {
-                // Check for immersive-ar support
-                const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
+                // Get camera position and direction
+                const cameraEl = document.querySelector('[camera]');
+                const cameraPosition = cameraEl.getAttribute('position');
+                const cameraRotation = cameraEl.getAttribute('rotation');
+
+                // Calculate position in front of camera (2 meters ahead)
+                const distance = 2;
+                const radians = (cameraRotation.y * Math.PI) / 180;
                 
-                if (!isARSupported) {
-                    showError('no-ar-mode');
-                    return;
-                }
+                const x = cameraPosition.x - Math.sin(radians) * distance;
+                const z = cameraPosition.z - Math.cos(radians) * distance;
+                const y = -0.5; // Slightly below camera (on ground)
 
-                // All checks passed!
-                showSuccess();
+                // Create and place model
+                placeModel(x, y, z);
+                
+                modelPlaced = true;
+                document.getElementById('instruction').classList.remove('show');
+                document.getElementById('model-info').classList.add('show');
+                document.getElementById('controls').classList.add('show');
 
-            } catch (error) {
-                console.error('AR check error:', error);
-                showError('unknown');
+                setTimeout(() => {
+                    document.getElementById('model-info').classList.remove('show');
+                }, 3000);
+            });
+        });
+
+        function placeModel(x, y, z) {
+            const container = document.getElementById('model-container');
+            
+            // Remove old model if exists
+            if (currentModel) {
+                container.removeChild(currentModel);
             }
-        }
 
-        function showSuccess() {
-            document.querySelector('.loading-spinner').style.display = 'none';
-            statusIcon.textContent = '✅';
-            statusTitle.textContent = 'AR Ready!';
-            statusText.textContent = 'Your device supports AR. Tap the button below to start.';
-            statusCard.style.background = 'rgba(76, 175, 80, 0.2)';
-            statusCard.style.border = '2px solid rgba(76, 175, 80, 0.5)';
-            arButton.classList.add('show');
-
-            // Show features
-            const features = document.createElement('div');
-            features.className = 'feature-list';
-            features.innerHTML = `
-                <strong>✨ Features:</strong>
-                <ul>
-                    <li>📍 Tap to place objects on surfaces</li>
-                    <li>🔄 Drag to rotate the object</li>
-                    <li>📏 Pinch to scale size</li>
-                    <li>🚶 Walk around to view from all angles</li>
-                </ul>
-            `;
-            statusCard.appendChild(features);
-        }
-
-        function showError(type) {
-            document.querySelector('.loading-spinner').style.display = 'none';
-            statusIcon.textContent = '❌';
-            statusTitle.textContent = 'AR Not Supported';
-            statusCard.style.background = 'rgba(244, 67, 54, 0.2)';
-            statusCard.style.border = '2px solid rgba(244, 67, 54, 0.5)';
-
-            const errorMessages = {
-                'desktop': {
-                    title: 'Desktop Device Detected',
-                    message: 'AR requires a mobile device with a camera.',
-                    requirements: [
-                        'Use an Android phone (Android 8.0+) with ARCore',
-                        'Or use an iPhone (iOS 12+) with ARKit',
-                        'Make sure Chrome or Safari is updated'
-                    ]
-                },
-                'no-webxr': {
-                    title: 'WebXR Not Available',
-                    message: 'Your browser doesn\'t support WebXR.',
-                    requirements: [
-                        'Update Chrome to latest version (v79+)',
-                        'On iPhone, use Safari (iOS 12+)',
-                        'Enable AR features in browser settings'
-                    ]
-                },
-                'no-ar-mode': {
-                    title: 'AR Mode Not Available',
-                    message: 'Your device doesn\'t support AR sessions.',
-                    requirements: [
-                        'Android: Requires ARCore support (Android 8.0+)',
-                        'iPhone: Requires ARKit support (iOS 12+)',
-                        'Install Google Play Services for AR (Android)',
-                        'Check if your phone model supports ARCore/ARKit'
-                    ]
-                },
-                'unknown': {
-                    title: 'Compatibility Check Failed',
-                    message: 'Could not verify AR support.',
-                    requirements: [
-                        'Check internet connection',
-                        'Allow camera and sensor permissions',
-                        'Try reloading the page',
-                        'Use Chrome (Android) or Safari (iOS)'
-                    ]
-                }
-            };
-
-            const error = errorMessages[type] || errorMessages['unknown'];
+            // Create new model entity
+            currentModel = document.createElement('a-entity');
+            currentModel.setAttribute('gltf-model', models[selectedModel]);
+            currentModel.setAttribute('position', `${x} ${y} ${z}`);
+            currentModel.setAttribute('scale', '1 1 1');
+            currentModel.setAttribute('rotation', '0 0 0');
+            currentModel.setAttribute('animation-mixer', '');
             
-            statusText.innerHTML = error.message;
-
-            const errorCard = document.createElement('div');
-            errorCard.className = 'error-card';
-            errorCard.innerHTML = `
-                <div class="error-title">${error.title}</div>
-                <div class="error-list">
-                    <strong>Requirements:</strong>
-                    <ul>
-                        ${error.requirements.map(req => `<li>${req}</li>`).join('')}
-                    </ul>
-                </div>
-            `;
-            errorContainer.appendChild(errorCard);
+            container.appendChild(currentModel);
+            
+            console.log(`Model placed at: x=${x}, y=${y}, z=${z}`);
         }
 
-        // Start AR when button clicked
-        arButton.addEventListener('click', () => {
-            console.log('Starting AR...');
-            modelViewer.activateAR();
-            arOverlay.classList.add('active');
-            
-            // Hide overlay after 3 seconds
-            setTimeout(() => {
-                arOverlay.classList.remove('active');
-            }, 3000);
+        // Control buttons
+        document.getElementById('scale-up').addEventListener('click', function() {
+            if (!currentModel) return;
+            currentScale += 0.2;
+            currentModel.setAttribute('scale', `${currentScale} ${currentScale} ${currentScale}`);
+            console.log('Scale increased:', currentScale);
         });
 
-        // Listen for AR session start/end
-        modelViewer.addEventListener('ar-status', (event) => {
-            console.log('AR Status:', event.detail.status);
+        document.getElementById('scale-down').addEventListener('click', function() {
+            if (!currentModel) return;
+            currentScale = Math.max(0.2, currentScale - 0.2);
+            currentModel.setAttribute('scale', `${currentScale} ${currentScale} ${currentScale}`);
+            console.log('Scale decreased:', currentScale);
         });
 
-        // Run compatibility check on load
-        window.addEventListener('load', () => {
-            setTimeout(checkARSupport, 1000);
+        document.getElementById('rotate-btn').addEventListener('click', function() {
+            if (!currentModel) return;
+            currentRotation += 45;
+            currentModel.setAttribute('rotation', `0 ${currentRotation} 0`);
+            console.log('Rotated:', currentRotation);
         });
 
-        console.log('AR Surface Placement App Initialized');
+        document.getElementById('reset-btn').addEventListener('click', function() {
+            modelPlaced = false;
+            currentScale = 1;
+            currentRotation = 0;
+            if (currentModel) {
+                const container = document.getElementById('model-container');
+                container.removeChild(currentModel);
+                currentModel = null;
+            }
+            document.getElementById('controls').classList.remove('show');
+            document.getElementById('instruction').classList.add('show');
+            console.log('Reset - ready to place again');
+        });
+
+        console.log('AR Surface Placement Ready');
+        console.log('Available models:', Object.keys(models));
     </script>
 </body>
 </html>
