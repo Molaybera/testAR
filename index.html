@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR Marker Scanner</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.3.0/aframe.min.js" defer></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.3.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
     <style>
         body {
             margin: 0;
@@ -15,29 +15,30 @@
 
         #info-panel {
             position: absolute;
-            top: 20px;
+            top: 10px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.8);
             color: white;
-            padding: 15px 25px;
-            border-radius: 12px;
+            padding: 10px 15px;
+            border-radius: 8px;
             z-index: 1000;
             text-align: center;
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255, 255, 255, 0.1);
-            max-width: 90%;
+            max-width: 85%;
+            font-size: 12px;
         }
 
         #info-panel h2 {
-            margin: 0 0 10px 0;
-            font-size: 18px;
+            margin: 0 0 5px 0;
+            font-size: 14px;
             color: #4CAF50;
         }
 
         #info-panel p {
-            margin: 5px 0;
-            font-size: 14px;
+            margin: 3px 0;
+            font-size: 11px;
         }
 
         #marker-link {
@@ -52,15 +53,15 @@
 
         .status {
             position: absolute;
-            bottom: 20px;
+            bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(76, 175, 80, 0.9);
             color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
+            padding: 8px 15px;
+            border-radius: 6px;
             z-index: 1000;
-            font-size: 14px;
+            font-size: 12px;
             display: none;
         }
 
@@ -70,22 +71,22 @@
             left: 50%;
             transform: translate(-50%, -50%);
             color: white;
-            font-size: 18px;
+            font-size: 14px;
             z-index: 999;
             background: rgba(0, 0, 0, 0.7);
-            padding: 20px 30px;
-            border-radius: 10px;
+            padding: 15px 20px;
+            border-radius: 8px;
         }
 
         .close-btn {
             background: rgba(255, 255, 255, 0.2);
             border: none;
             color: white;
-            padding: 5px 15px;
-            border-radius: 5px;
+            padding: 4px 12px;
+            border-radius: 4px;
             cursor: pointer;
-            margin-top: 10px;
-            font-size: 12px;
+            margin-top: 5px;
+            font-size: 11px;
         }
 
         .close-btn:hover {
@@ -119,70 +120,72 @@
         <!-- Camera -->
         <a-entity camera></a-entity>
 
-        <!-- Marker with 3D content -->
+        <!-- Marker with 3D content - MUCH BIGGER AND BRIGHTER -->
         <a-marker preset="hiro" id="marker">
-            <!-- Animated Spinning Cube -->
+            <!-- Large Animated Spinning Cube -->
             <a-box 
-                position="0 0.5 0" 
+                position="0 1 0" 
+                scale="2 2 2"
                 rotation="0 45 45"
-                color="#4CAF50"
+                color="#FF0000"
                 animation="property: rotation; to: 360 405 405; loop: true; dur: 4000; easing: linear"
-                animation__scale="property: scale; to: 1.2 1.2 1.2; dir: alternate; dur: 1000; loop: true; easing: easeInOutQuad"
-                material="opacity: 0.9"
+                animation__scale="property: scale; to: 2.5 2.5 2.5; dir: alternate; dur: 1000; loop: true; easing: easeInOutQuad"
+                material="opacity: 1; metalness: 0.5; roughness: 0.3"
                 shadow>
             </a-box>
 
-            <!-- Orbiting Sphere -->
+            <!-- Large Orbiting Sphere -->
             <a-entity
                 animation="property: rotation; to: 0 360 0; loop: true; dur: 3000; easing: linear">
                 <a-sphere 
-                    position="2 0.5 0" 
-                    radius="0.3" 
-                    color="#FF5722"
+                    position="3 1 0" 
+                    radius="0.8" 
+                    color="#00FF00"
                     material="metalness: 0.8; roughness: 0.2"
                     shadow>
                 </a-sphere>
             </a-entity>
 
-            <!-- Cylinder Base -->
+            <!-- Large Cylinder Base -->
             <a-cylinder 
                 position="0 0 0" 
-                radius="0.8" 
-                height="0.1" 
-                color="#2196F3"
-                material="opacity: 0.7"
+                radius="2" 
+                height="0.3" 
+                color="#0000FF"
+                material="opacity: 0.9"
                 shadow>
             </a-cylinder>
 
-            <!-- Text Label -->
+            <!-- Large Text Label -->
             <a-text 
-                value="AR Demo" 
-                position="0 1.5 0" 
+                value="AR WORKING!" 
+                position="0 3 0" 
                 align="center" 
-                color="#FFFFFF"
-                width="4"
-                animation="property: position; to: 0 1.7 0; dir: alternate; dur: 1500; loop: true; easing: easeInOutSine">
+                color="#FFFF00"
+                width="8"
+                scale="2 2 2"
+                animation="property: position; to: 0 3.5 0; dir: alternate; dur: 1500; loop: true; easing: easeInOutSine">
             </a-text>
 
-            <!-- Torus Ring -->
+            <!-- Large Torus Ring -->
             <a-torus 
-                position="0 0.5 0" 
-                radius="1.2" 
-                radius-tubular="0.05" 
-                color="#FFC107"
+                position="0 1 0" 
+                radius="2.5" 
+                radius-tubular="0.15" 
+                color="#FF00FF"
                 rotation="90 0 0"
                 animation="property: rotation; to: 90 360 0; loop: true; dur: 6000; easing: linear"
-                material="opacity: 0.8">
+                material="opacity: 1">
             </a-torus>
 
-            <!-- Cone Pointer -->
+            <!-- Large Cone Pointer -->
             <a-cone 
-                position="0 2 0" 
-                radius-bottom="0.2" 
+                position="0 4 0" 
+                radius-bottom="0.5" 
                 radius-top="0" 
-                height="0.5" 
-                color="#E91E63"
-                animation="property: position; to: 0 2.3 0; dir: alternate; dur: 800; loop: true; easing: easeInOutQuad">
+                height="1" 
+                color="#00FFFF"
+                animation="property: position; to: 0 4.5 0; dir: alternate; dur: 800; loop: true; easing: easeInOutQuad">
             </a-cone>
         </a-marker>
 
