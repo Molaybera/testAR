@@ -2,434 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AR Surface Placement</title>
-    <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1c2407b26c61958baa93967b5412487cd94b290b/dist/aframe-master.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/three.js/build/ar-threex-location-only.js"></script>
-    <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Web App</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        body { margin: 0; padding: 0; font-family: sans-serif; }
+        
+        model-viewer {
+            width: 100vw;
+            height: 100vh;
+            background-color: #f0f0f0;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            overflow: hidden;
-        }
-
-        #start-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 99999;
-            color: white;
-            text-align: center;
-            padding: 30px;
-        }
-
-        #start-overlay h1 {
-            font-size: 32px;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
-
-        #start-overlay p {
-            font-size: 15px;
-            opacity: 0.9;
-            margin-bottom: 30px;
-            max-width: 350px;
-            line-height: 1.6;
-        }
-
-        #start-btn {
-            background: white;
-            color: #667eea;
-            border: none;
-            padding: 18px 45px;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            transition: transform 0.2s;
-        }
-
-        #start-btn:active {
-            transform: scale(0.95);
-        }
-
-        .feature-box {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 30px;
-            max-width: 350px;
-        }
-
-        .feature-box h3 {
-            font-size: 16px;
-            margin-bottom: 12px;
-        }
-
-        .feature-box ul {
-            text-align: left;
-            font-size: 13px;
-            line-height: 1.8;
-        }
-
-        .feature-box li {
-            margin-bottom: 8px;
-        }
-
-        #controls {
-            position: fixed;
+        /* Custom styling for the AR button */
+        #ar-button {
+            position: absolute;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            display: none;
-            gap: 10px;
-            z-index: 9999;
-        }
-
-        #controls.show {
-            display: flex;
-        }
-
-        .control-btn {
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border: none;
+            border-radius: 30px;
+            background-color: #007bff;
             color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .control-btn:active {
-            transform: scale(0.95);
-            background: rgba(0, 0, 0, 0.9);
-        }
-
-        #instruction {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-size: 14px;
-            z-index: 9999;
-            display: none;
-            text-align: center;
-            max-width: 85%;
-        }
-
-        #instruction.show {
-            display: block;
-        }
-
-        #crosshair {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255, 255, 255, 0.8);
-            border-radius: 50%;
-            z-index: 9998;
-            pointer-events: none;
-        }
-
-        #crosshair::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 8px;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 50%;
-        }
-
-        #model-info {
-            position: fixed;
-            top: 70px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(76, 175, 80, 0.9);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 8px;
-            font-size: 12px;
-            z-index: 9999;
-            display: none;
-        }
-
-        #model-info.show {
-            display: block;
-        }
-
-        .model-selector {
-            margin-top: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
-            max-width: 350px;
-        }
-
-        .model-selector h3 {
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .model-option {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: background 0.2s;
-        }
-
-        .model-option:active {
-            background: rgba(255, 255, 255, 0.4);
-        }
-
-        .model-option.selected {
-            background: rgba(255, 255, 255, 0.4);
-            border: 2px solid white;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
-    <div id="start-overlay">
-        <h1>🌟 AR Surface Placement</h1>
-        <p>Place 3D models in your real world. No apps needed - everything works in your browser!</p>
+
+    <model-viewer 
+        src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+        poster="https://modelviewer.dev/shared-assets/models/Astronaut.webp"
+        alt="A 3D model of an astronaut"
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        camera-controls
+        shadow-intensity="1"
+        ar-scale="auto"
+        touch-action="pan-y">
         
-        <div class="model-selector">
-            <h3>Choose a 3D Model:</h3>
-            <div class="model-option selected" data-model="astronaut">
-                🚀 Astronaut
-            </div>
-            <div class="model-option" data-model="duck">
-                🦆 Duck
-            </div>
-            <div class="model-option" data-model="robot">
-                🤖 Robot
-            </div>
-            <div class="model-option" data-model="table">
-                table
-            </div>
-        </div>
+        <button slot="ar-button" id="ar-button">
+            👋 View in your space
+        </button>
 
-        <button id="start-btn">Launch AR Camera</button>
+    </model-viewer>
 
-        <div class="feature-box">
-            <h3>✨ How it works:</h3>
-            <ul>
-                <li>📸 Camera opens in browser</li>
-                <li>👆 Tap screen to place model</li>
-                <li>📏 Use buttons to scale/rotate</li>
-                <li>🚶 Walk around - model stays in place</li>
-                <li>🔄 No apps or downloads needed!</li>
-            </ul>
-        </div>
-    </div>
-
-    <div id="crosshair"></div>
-
-    <div id="instruction" class="show">
-        👆 Tap screen to place model at the center circle
-    </div>
-
-    <div id="model-info">
-        Model placed! ✅ Look around to find it
-    </div>
-
-    <div id="controls">
-        <button class="control-btn" id="scale-up">➕ Bigger</button>
-        <button class="control-btn" id="scale-down">➖ Smaller</button>
-        <button class="control-btn" id="rotate-btn">🔄 Rotate</button>
-        <button class="control-btn" id="reset-btn">🔁 Reset</button>
-    </div>
-
-    <a-scene
-        id="ar-scene"
-        embedded
-        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; trackingMethod: best;"
-        vr-mode-ui="enabled: false"
-        gesture-detector
-        renderer="logarithmicDepthBuffer: true; precision: medium; antialias: true;">
-
-        <!-- Camera -->
-        <a-entity camera look-controls-enabled="false" arjs-look-controls="smoothingFactor: 0.1"></a-entity>
-
-        <!-- Placeholder for model - will be created dynamically -->
-        <a-entity id="model-container"></a-entity>
-
-    </a-scene>
-
-    <script>
-        // Available 3D Models
-        const models = {
-            astronaut: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-            duck: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Binary/Duck.glb',
-            robot: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/RobotExpressive/glTF-Binary/RobotExpressive.glb',
-            table: './table.glb'
-        };
-
-        let selectedModel = 'astronaut';
-        let modelPlaced = false;
-        let currentModel = null;
-        let currentScale = 2; // Start bigger
-        let currentRotation = 0;
-
-        // Model selection
-        document.querySelectorAll('.model-option').forEach(option => {
-            option.addEventListener('click', function() {
-                document.querySelectorAll('.model-option').forEach(o => o.classList.remove('selected'));
-                this.classList.add('selected');
-                selectedModel = this.dataset.model;
-                console.log('Selected model:', selectedModel);
-            });
-        });
-
-        // Start AR
-        document.getElementById('start-btn').addEventListener('click', function() {
-            document.getElementById('start-overlay').style.display = 'none';
-            document.getElementById('instruction').classList.add('show');
-            console.log('AR Started with model:', selectedModel);
-        });
-
-        // Wait for scene to load
-        const scene = document.querySelector('a-scene');
-        scene.addEventListener('loaded', function() {
-            console.log('AR Scene loaded');
-
-            // Add click/touch event to place model
-            const camera = document.querySelector('[camera]');
-            
-            scene.addEventListener('click', function(evt) {
-                if (modelPlaced) return; // Only place once
-
-                console.log('Screen tapped - placing model');
-
-                // Get camera position and direction
-                const cameraEl = document.querySelector('[camera]');
-                const cameraPosition = cameraEl.getAttribute('position');
-                const cameraRotation = cameraEl.getAttribute('rotation');
-
-                // Calculate position RIGHT IN FRONT of camera (0.7 meters ahead)
-                const distance = 0.7;
-                const radians = (cameraRotation.y * Math.PI) / 180;
-                
-                const x = cameraPosition.x - Math.sin(radians) * distance;
-                const z = cameraPosition.z - Math.cos(radians) * distance;
-                const y = cameraPosition.y - 0.3; // Slightly below eye level
-
-                // Create and place model
-                placeModel(x, y, z);
-                
-                modelPlaced = true;
-                document.getElementById('instruction').classList.remove('show');
-                document.getElementById('crosshair').style.display = 'none';
-                document.getElementById('model-info').classList.add('show');
-                document.getElementById('controls').classList.add('show');
-
-                setTimeout(() => {
-                    document.getElementById('model-info').classList.remove('show');
-                }, 4000);
-            });
-        });
-
-        function placeModel(x, y, z) {
-            const container = document.getElementById('model-container');
-            
-            // Remove old model if exists
-            if (currentModel) {
-                container.removeChild(currentModel);
-            }
-
-            // Create new model entity
-            currentModel = document.createElement('a-entity');
-            currentModel.setAttribute('gltf-model', models[selectedModel]);
-            currentModel.setAttribute('position', `${x} ${y} ${z}`);
-            currentModel.setAttribute('scale', `${currentScale} ${currentScale} ${currentScale}`);
-            currentModel.setAttribute('rotation', '0 0 0');
-            currentModel.setAttribute('animation-mixer', '');
-            
-            // Add a glowing sphere marker at the base
-            const marker = document.createElement('a-sphere');
-            marker.setAttribute('radius', '0.05');
-            marker.setAttribute('color', '#00ff00');
-            marker.setAttribute('position', '0 0 0');
-            marker.setAttribute('material', 'opacity: 0.7; emissive: #00ff00; emissiveIntensity: 0.5');
-            currentModel.appendChild(marker);
-            
-            container.appendChild(currentModel);
-            
-            console.log(`Model placed at: x=${x.toFixed(2)}, y=${y.toFixed(2)}, z=${z.toFixed(2)}, scale: ${currentScale}`);
-        }
-
-        // Control buttons
-        document.getElementById('scale-up').addEventListener('click', function() {
-            if (!currentModel) return;
-            currentScale += 0.2;
-            currentModel.setAttribute('scale', `${currentScale} ${currentScale} ${currentScale}`);
-            console.log('Scale increased:', currentScale);
-        });
-
-        document.getElementById('scale-down').addEventListener('click', function() {
-            if (!currentModel) return;
-            currentScale = Math.max(0.2, currentScale - 0.2);
-            currentModel.setAttribute('scale', `${currentScale} ${currentScale} ${currentScale}`);
-            console.log('Scale decreased:', currentScale);
-        });
-
-        document.getElementById('rotate-btn').addEventListener('click', function() {
-            if (!currentModel) return;
-            currentRotation += 45;
-            currentModel.setAttribute('rotation', `0 ${currentRotation} 0`);
-            console.log('Rotated:', currentRotation);
-        });
-
-        document.getElementById('reset-btn').addEventListener('click', function() {
-            modelPlaced = false;
-            currentScale = 2;
-            currentRotation = 0;
-            if (currentModel) {
-                const container = document.getElementById('model-container');
-                container.removeChild(currentModel);
-                currentModel = null;
-            }
-            document.getElementById('controls').classList.remove('show');
-            document.getElementById('instruction').classList.add('show');
-            document.getElementById('crosshair').style.display = 'block';
-            console.log('Reset - ready to place again');
-        });
-
-        console.log('AR Surface Placement Ready');
-        console.log('Available models:', Object.keys(models));
-    </script>
 </body>
 </html>
