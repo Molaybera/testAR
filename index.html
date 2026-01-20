@@ -3,31 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Web App</title>
+    <title>AR Pizza Viewer</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     <style>
-        body { margin: 0; padding: 0; font-family: sans-serif; }
+        body { margin: 0; padding: 0; font-family: sans-serif; background-color: #f0f0f0; }
         
         model-viewer {
             width: 100vw;
             height: 100vh;
-            background-color: #f0f0f0;
+            /* Simple background gradient */
+            background: radial-gradient(circle, #ffffff, #dcdcdc);
         }
 
         /* Custom styling for the AR button */
         #ar-button {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             padding: 12px 24px;
             border: none;
             border-radius: 30px;
-            background-color: #007bff;
+            background-color: #ff4500; /* Pizza red color */
             color: white;
             font-size: 16px;
             font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             cursor: pointer;
             z-index: 10;
         }
@@ -36,19 +37,20 @@
 <body>
 
     <model-viewer 
-        src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
-        poster="https://modelviewer.dev/shared-assets/models/Astronaut.webp"
-        alt="A 3D model of an astronaut"
+        src="./pizza.glb"
+        alt="A 3D model of a pizza"
         ar
         ar-modes="webxr scene-viewer quick-look"
         camera-controls
+        auto-rotate
         shadow-intensity="1"
-        ar-scale="auto"
         touch-action="pan-y">
         
         <button slot="ar-button" id="ar-button">
-            👋 View in your space
+            🍕 Place Pizza in Room
         </button>
+
+        <div id="progress" slot="progress-bar"></div>
 
     </model-viewer>
 
